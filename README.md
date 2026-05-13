@@ -1,4 +1,4 @@
-# Multi-Dataset-ML-framework-for-early-prediction-of-Liver-Cirrhosis
+# Multi-Dataset-ML & DL -framework-for-early-prediction-of-Liver-Cirrhosis
 
 A comprehensive machine learning framework for the early prediction of liver cirrhosis using multiple clinical datasets. The project integrates advanced preprocessing, hyperparameter optimization, probability calibration, explainable AI, and cross-dataset benchmarking to identify robust and clinically interpretable predictive models.
 
@@ -52,13 +52,6 @@ The framework is designed to be easily extended to additional medical datasets.
 
 ### Machine Learning Models
 - CatBoost
-- XGBoost
-- LightGBM
-- Random Forest
-- Extra Trees
-- Logistic Regression
-- Support Vector Machine
-- K-Nearest Neighbors
 
 ### Deep Learning Models
 - TabNet
@@ -70,10 +63,8 @@ The framework is designed to be easily extended to additional medical datasets.
 ### Hyperparameter Optimization
 Optuna is used to automatically search for optimal model configurations.
 
-### Calibration
-Predicted probabilities are calibrated to improve reliability:
-- Isotonic Regression
-- Platt Scaling (Sigmoid Calibration)
+### Probalistic Calibration
+The reliability of the predicited models. Brier score and calibration curves are used to show the reliability of our model 
 
 ### Threshold Optimization
 Decision thresholds are tuned to maximize F1 score rather than relying solely on the default threshold of 0.5.
