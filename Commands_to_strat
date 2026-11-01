@@ -1,0 +1,108 @@
+# ==============================================================================
+# LIVER CIRRHOSIS PREDICTION PLATFORM — QUICK COMMANDS GUIDE
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# STEP 0: ACTIVATE THE VIRTUAL ENVIRONMENT (Do this first in your terminal!)
+# ------------------------------------------------------------------------------
+# All tools (pytest, flake8, uvicorn, catboost) are installed inside .venv
+source .venv/bin/activate
+
+# (To deactivate later when done, simply type: deactivate)
+
+
+# ------------------------------------------------------------------------------
+# STEP 1: TRAIN AND EVALUATE MODEL (Leakage-Free Multi-Dataset Pipeline)
+# ------------------------------------------------------------------------------
+# Trains CatBoost on harmonized, deduplicated clinical cohorts.
+# Outputs realistic clinical metrics (~78.5% accuracy, 0.912 ROC-AUC) and
+# saves the complete pipeline bundle to 'artifacts/model_pipeline.joblib'.
+
+python3 src/train.py
+
+# Or without activating .venv:
+# .venv/bin/python3 src/train.py
+
+
+# ------------------------------------------------------------------------------
+# STEP 2: RUN AUTOMATED TESTS & LINTING
+# ------------------------------------------------------------------------------
+pytest -v
+flake8 src api tests --max-line-length=120 --exclude=.venv,__pycache__
+
+# Or without activating .venv:
+# .venv/bin/pytest -v
+# .venv/bin/flake8 src api tests --max-line-length=120 --exclude=.venv,__pycache__
+
+
+# ------------------------------------------------------------------------------
+# STEP 3: START LOCAL FASTAPI SERVICE
+# ------------------------------------------------------------------------------
+# Starts the server at http://localhost:8000
+# Interactive API docs (Swagger): http://localhost:8000/docs
+# Telemetry metrics endpoint:    http://localhost:8000/metrics
+
+uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+
+# Or without activating .venv:
+# .venv/bin/uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+
+
+# ------------------------------------------------------------------------------
+# STEP 4: TEST THE RUNNING API (cURL)
+# ------------------------------------------------------------------------------
+# Health check
+curl -X GET "http://localhost:8000/health"
+
+# Readiness check (verifies model is loaded in memory)
+curl -X GET "http://localhost:8000/ready"
+
+# Run prediction
+curl -X POST "http://localhost:8000/predict" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "age": 55,
+    "total_bilirubin": 2.4,
+    "albumin": 3.1,
+    "alt": 48.0,
+    "ast": 52.0,
+    "alp": 210.0,
+    "total_proteins": 6.7
+  }'
+
+
+# ------------------------------------------------------------------------------
+# STEP 5: DOCKER: BUILD & RUN SINGLE CONTAINER
+# ------------------------------------------------------------------------------
+# Step 5a: Build the container image
+docker build -t liver-cirrhosis-api:latest .
+
+# Step 5b: Run container in background (mapped to port 8000)
+docker run -d \
+  -p 8000:8000 \
+  --name cirrhosis-api \
+  liver-cirrhosis-api:latest
+
+# Step 5c: View logs & container health
+docker logs -f cirrhosis-api
+
+# Step 5d: Stop container
+docker stop cirrhosis-api && docker rm cirrhosis-api
+
+
+# ------------------------------------------------------------------------------
+# STEP 6: DOCKER COMPOSE: START FULL STACK (API + Prometheus + Grafana)
+# ------------------------------------------------------------------------------
+# Start all 3 services in one command
+docker compose up -d --build
+
+# Service endpoints:
+# - API & Swagger Docs: http://localhost:8000/docs
+# - Prometheus:         http://localhost:9090
+# - Grafana Dashboards: http://localhost:3000   (User: admin / Pass: admin123)
+
+# View live container logs
+docker compose logs -f
+
+# Stop and remove containers
+docker compose down
